@@ -1,65 +1,181 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+
+export default function LandingPage() {
+  const router = useRouter();
+  const [hasResults, setHasResults] = useState(false);
+
+  useEffect(() => {
+    // Check if user has cached results
+    const cachedResults = localStorage.getItem("cachedResults");
+    queueMicrotask(() => setHasResults(!!cachedResults));
+  }, []);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+      {/* Animated background elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <motion.div
+          animate={{
+            scale: [1, 1.2, 1],
+            rotate: [0, 90, 0],
+          }}
+          transition={{
+            duration: 20,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+          className="absolute top-0 -left-20 w-96 h-96 bg-purple-300 rounded-full opacity-20 blur-3xl"
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+        <motion.div
+          animate={{
+            scale: [1.2, 1, 1.2],
+            rotate: [90, 0, 90],
+          }}
+          transition={{
+            duration: 15,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+          className="absolute bottom-0 -right-20 w-96 h-96 bg-pink-300 rounded-full opacity-20 blur-3xl"
+        />
+        <motion.div
+          animate={{
+            y: [0, -30, 0],
+            x: [0, 30, 0],
+          }}
+          transition={{
+            duration: 18,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+          className="absolute top-1/2 left-1/2 w-96 h-96 bg-indigo-300 rounded-full opacity-10 blur-3xl"
+        />
+      </div>
+
+      <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="max-w-3xl w-full text-center space-y-10"
+        >
+          {/* Badge icons decoration */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3, duration: 0.6 }}
+            className="flex justify-center gap-4 mb-8"
+          >
+            {["✨", "🎵", "💫"].map((emoji, i) => (
+              <motion.div
+                key={i}
+                animate={{
+                  y: [0, -10, 0],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  delay: i * 0.2,
+                }}
+                className="text-4xl md:text-5xl"
+              >
+                {emoji}
+              </motion.div>
+            ))}
+          </motion.div>
+
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{
+              delay: 0.2,
+              type: "spring",
+              stiffness: 150,
+              damping: 12,
+            }}
+          >
+            <h1
+              className="text-7xl md:text-8xl font-black mb-6 text-gradient-rainbow"
+              style={{ fontFamily: "var(--font-family-display)" }}
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              Me, Apparently
+            </h1>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="space-y-5"
+          >
+            <h2
+              className="text-4xl md:text-5xl font-bold text-slate-900"
+              style={{ fontFamily: "var(--font-family-display)" }}
             >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
+              Find Your 3-Badge
+              <br />
+              <span className="text-gradient-cosmic">Personality Stack</span>
+            </h2>
+            <p className="text-xl md:text-2xl text-slate-600 font-medium">
+              Takes 2 minutes. No login required.
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+            className="flex flex-col sm:flex-row gap-5 justify-center items-center pt-6"
+          >
+            {hasResults && (
+              <button
+                onClick={() => router.push("/results")}
+                className="px-10 py-5 bg-white text-purple-700 text-lg font-bold rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 border-2 border-purple-400"
+              >
+                <span className="flex items-center justify-center gap-2">
+                  <span>🏆</span> My Results
+                </span>
+              </button>
+            )}
+
+            <button
+              onClick={() => router.push("/username")}
+              className="px-12 py-5 block bg-gradient-cosmic text-white text-lg font-bold rounded-2xltransition-shadow duration-300"
+            >
+              <span className="flex items-center justify-center gap-2">
+                {hasResults ? "Retake Quiz" : "Start Your Journey"}
+                <span>→</span>
+              </span>
+            </button>
+          </motion.div>
+
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.9 }}
+            className="text-base text-slate-500 italic pt-4 px-4"
+          >
+            ✨ Emotionally accurate. Scientifically questionable. Very
+            shareable.
+          </motion.p>
+
+          <motion.a
+            href="https://twitter.com/mistartworks"
             target="_blank"
             rel="noopener noreferrer"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.1 }}
+            className="inline-block text-sm text-slate-400 hover:text-purple-600 transition-colors pt-2"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+            made with 💜 by @mistartworks
+          </motion.a>
+        </motion.div>
+      </div>
     </div>
   );
 }
