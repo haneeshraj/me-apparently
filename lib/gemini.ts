@@ -140,11 +140,9 @@ For analytics, use quirky, unserious trait names like "overthinking energy", "ch
 }
 
 export async function assignMusicPersonalityBadge(
-  spotifyData: { tracks: Array<{ name: string; artist: string; genre?: string }> } | null,
-  fallbackAnswers: string[] | null
+  answers: string[]
 ): Promise<BadgeAssignment> {
-  const prompt = spotifyData
-    ? `You are analyzing Spotify top 10 tracks to assign one of 10 Music Personality badges.
+  const prompt = `You are analyzing music vibe answers to assign one of 10 Music Personality badges.
 
 Badge Options:
 1. Late-Night Thinker - Listens in solitude. Music is reflection, not noise.
@@ -158,36 +156,7 @@ Badge Options:
 9. Nostalgia Trapped - Emotionally attached to the past. Music = time travel.
 10. Emotion Translator - Uses music to process, label, and understand feelings.
 
-User's top tracks:
-${spotifyData.tracks.map((t, i) => `${i + 1}. "${t.name}" by ${t.artist}${t.genre ? ` (${t.genre})` : ''}`).join('\n')}
-
-Respond ONLY with a JSON object:
-{
-  "badgeId": <number 1-10>,
-  "reasoning": "<brief explanation based on their music taste>",
-  "analytics": [
-    {"trait": "<quirky trait name>", "percentage": <number 0-100>},
-    {"trait": "<quirky trait name>", "percentage": <number 0-100>},
-    {"trait": "<quirky trait name>", "percentage": <number 0-100>}
-  ]
-}
-
-For analytics, use quirky, unserious trait names like "sad boi hours", "playlist obsession", "genre hopping", "repeat one syndrome", etc.`
-    : `You are analyzing music vibe answers to assign one of 10 Music Personality badges.
-
-Badge Options:
-1. Late-Night Thinker - Listens in solitude. Music is reflection, not noise.
-2. Main Character Energy - Lives cinematically. Soundtracks moments and emotions.
-3. Sonic Explorer - Constantly discovering. Genres are suggestions, not rules.
-4. Comfort Listener - Repeats favorites. Music is emotional safety.
-5. Chaos Shuffle - Unpredictable moods, impulsive listening. No pattern, all vibes.
-6. Softcore Melancholic - Gentle sadness, emotional softness, healing through sound.
-7. Adrenaline Listener - High-energy, movement-driven, hype-focused music choices.
-8. Intentional Curator - Carefully crafted playlists. Controls emotional environments.
-9. Nostalgia Trapped - Emotionally attached to the past. Music = time travel.
-10. Emotion Translator - Uses music to process, label, and understand feelings.
-
-User's answers: ${fallbackAnswers?.join(' | ')}
+User's answers: ${answers.join(' | ')}
 
 Respond ONLY with a JSON object:
 {

@@ -1,9 +1,8 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useEffect, Suspense } from "react";
-import { getSpotifyAuthUrl } from "@/lib/spotify";
+import { useRouter } from "next/navigation";
+import { useState, Suspense } from "react";
 
 const FALLBACK_QUESTIONS = [
   {
@@ -120,59 +119,9 @@ const FALLBACK_QUESTIONS = [
 
 function MusicPersonalityQuizContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const [useSpotify, setUseSpotify] = useState<boolean | null>(null);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<string[]>([]);
-  const [, setSpotifyTracks] = useState([]);
   const [submitting, setSubmitting] = useState(false);
-
-  useEffect(() => {
-    // Check if Spotify callback succeeded
-    const spotifySuccess = searchParams.get("spotify_success");
-    const tracksParam = searchParams.get("tracks");
-
-    if (spotifySuccess === "true" && tracksParam) {
-      (async () => {
-        try {
-          const tracks = JSON.parse(decodeURIComponent(tracksParam));
-          setSpotifyTracks(tracks);
-          setUseSpotify(true);
-          // Store tracks
-          localStorage.setItem("spotifyTracks", JSON.stringify(tracks));
-          localStorage.setItem("musicPersonalityMethod", "spotify");
-
-          // Ask Gemini for Music Personality badge based on Spotify tracks and cache result
-          const response = await fetch("/api/gemini/assign-badge", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              type: "music",
-              answers: null,
-              spotifyData: { tracks },
-            }),
-          });
-          const data = await response.json();
-          localStorage.setItem("musicBadgeResult", JSON.stringify(data));
-
-          setTimeout(() => {
-            router.push("/quiz/dating-energy");
-          }, 800);
-        } catch (error) {
-          console.error("Error handling Spotify callback:", error);
-          router.push("/quiz/dating-energy");
-        }
-      })();
-    }
-  }, [searchParams, router]);
-
-  const handleSpotifyConnect = () => {
-    window.location.href = getSpotifyAuthUrl();
-  };
-
-  const handleSkipSpotify = () => {
-    setUseSpotify(false);
-  };
 
   const handleAnswer = async (answer: string) => {
     if (submitting) return;
@@ -198,7 +147,6 @@ function MusicPersonalityQuizContent() {
           body: JSON.stringify({
             type: "music",
             answers: newAnswers,
-            spotifyData: null,
           }),
         });
         const data = await response.json();
@@ -211,167 +159,6 @@ function MusicPersonalityQuizContent() {
       }
     }
   };
-
-  if (useSpotify === null) {
-    return (
-      <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-emerald-50 via-cyan-50 to-blue-50">
-        {/* Animated background */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <motion.div
-            animate={{
-              scale: [1, 1.3, 1],
-              rotate: [0, 180, 0],
-            }}
-            transition={{
-              duration: 25,
-              repeat: Infinity,
-              ease: "linear",
-            }}
-            className="absolute top-10 left-10 w-96 h-96 bg-emerald-300 rounded-full opacity-20 blur-3xl"
-          />
-          <motion.div
-            animate={{
-              scale: [1.2, 1, 1.2],
-              rotate: [180, 0, 180],
-            }}
-            transition={{
-              duration: 20,
-              repeat: Infinity,
-              ease: "linear",
-            }}
-            className="absolute bottom-10 right-10 w-96 h-96 bg-cyan-300 rounded-full opacity-20 blur-3xl"
-          />
-        </div>
-
-        <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="max-w-2xl w-full space-y-8"
-          >
-            <div className="text-center space-y-4">
-              <motion.div
-                animate={{
-                  rotate: [0, 10, -10, 0],
-                }}
-                transition={{
-                  duration: 3,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-                className="text-7xl mb-4"
-              >
-                🎵
-              </motion.div>
-              <h2
-                className="text-5xl font-black text-slate-900 mb-4"
-                style={{ fontFamily: "var(--font-family-display)" }}
-              >
-                Section 2: Music Personality
-              </h2>
-              <p className="text-xl text-slate-600 font-medium">
-                Connect your Spotify to analyze your top tracks,
-                <br />
-                or answer a few vibe questions instead.
-              </p>
-            </div>
-
-            <div className="space-y-5">
-              <button
-                onClick={handleSpotifyConnect}
-                className="w-full px-12 py-7 bg-green-600 hover:bg-green-700 text-white text-xl font-bold rounded-3xl shadow-xl hover:shadow-2xl transition-shadow duration-300 overflow-hidden"
-              >
-                <span className="flex items-center justify-center gap-3">
-                  <span className="text-2xl">🎵</span>
-                  Connect Spotify
-                </span>
-              </button>
-
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-slate-300"></div>
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-4 bg-gradient-to-r from-emerald-50 via-cyan-50 to-blue-50 text-slate-500 font-semibold">
-                    OR
-                  </span>
-                </div>
-              </div>
-
-              <button
-                onClick={handleSkipSpotify}
-                className="w-full px-12 py-7 bg-white/80 backdrop-blur-sm hover:bg-white text-slate-700 text-xl font-bold rounded-3xl shadow-lg hover:shadow-xl transition-shadow duration-300 border-2 border-slate-200 hover:border-slate-300"
-              >
-                Answer Questions Instead
-              </button>
-            </div>
-          </motion.div>
-        </div>
-      </div>
-    );
-  }
-
-  if (useSpotify) {
-    return (
-      <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-emerald-50 via-cyan-50 to-blue-50 flex items-center justify-center p-4">
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <motion.div
-            animate={{
-              scale: [1, 1.2, 1],
-              opacity: [0.2, 0.3, 0.2],
-            }}
-            transition={{
-              duration: 3,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-            className="absolute inset-0 bg-gradient-to-r from-green-300 to-emerald-300 blur-3xl"
-          />
-        </div>
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="relative text-center space-y-6"
-        >
-          <motion.div
-            animate={{
-              rotate: [0, 360],
-              scale: [1, 1.1, 1],
-            }}
-            transition={{
-              rotate: { duration: 2, repeat: Infinity, ease: "linear" },
-              scale: { duration: 1.5, repeat: Infinity, ease: "easeInOut" },
-            }}
-            className="text-7xl mb-6"
-          >
-            🎵
-          </motion.div>
-          <h2
-            className="text-4xl font-black text-slate-900"
-            style={{ fontFamily: "var(--font-family-display)" }}
-          >
-            Connecting to Spotify...
-          </h2>
-          <div className="flex justify-center gap-2">
-            {[0, 1, 2].map((i) => (
-              <motion.div
-                key={i}
-                animate={{
-                  y: [0, -20, 0],
-                }}
-                transition={{
-                  duration: 1,
-                  repeat: Infinity,
-                  delay: i * 0.2,
-                }}
-                className="w-3 h-3 bg-green-500 rounded-full"
-              />
-            ))}
-          </div>
-        </motion.div>
-      </div>
-    );
-  }
 
   const progress = ((currentQuestion + 1) / FALLBACK_QUESTIONS.length) * 100;
 

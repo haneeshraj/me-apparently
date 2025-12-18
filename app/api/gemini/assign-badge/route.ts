@@ -4,14 +4,14 @@ import { assignCorePersonalityBadge, assignMusicPersonalityBadge, assignDatingEn
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { type, answers, spotifyData } = body
+    const { type, answers } = body
 
     let result
 
     if (type === 'core') {
       result = await assignCorePersonalityBadge(answers)
     } else if (type === 'music') {
-      result = await assignMusicPersonalityBadge(spotifyData || null, answers || null)
+      result = await assignMusicPersonalityBadge(answers)
     } else if (type === 'dating') {
       result = await assignDatingEnergyBadge(answers)
     } else {
