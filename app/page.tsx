@@ -1,8 +1,11 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 
 export default function LandingPage() {
+  const router = useRouter();
+  
   return (
     <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
       {/* Animated background elements */}
@@ -90,7 +93,9 @@ export default function LandingPage() {
               Don't worry though...
             </p>
             <p className="text-xl md:text-2xl text-slate-700 font-medium leading-relaxed">
-              There's more random fun <span className="font-black text-purple-600">SHIT</span> coming out that you can try for free!
+              There's more random fun{" "}
+              <span className="font-black text-purple-600">SHIT</span> coming
+              out that you can try for free!
             </p>
           </motion.div>
 
@@ -98,7 +103,7 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.7 }}
-            className="pt-8"
+            className="pt-8 space-y-8"
           >
             <a
               href="https://twitter.com/mistartworks"
@@ -112,6 +117,19 @@ export default function LandingPage() {
             <p className="text-lg text-slate-600 font-medium mt-6">
               Be the first one to experience it!
             </p>
+
+            <div className="pt-8 border-t border-slate-300 mt-12">
+              <p className="text-lg text-slate-700 font-medium mb-4">
+                In the meantime, check out all the badges:
+              </p>
+              <button
+                onClick={() => router.push("/badges")}
+                className="inline-flex items-center gap-3 px-10 py-5 bg-white/80 backdrop-blur-sm hover:bg-white text-purple-700 text-lg font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-purple-300 hover:border-purple-400"
+              >
+                <span>🏆</span>
+                <span>View & Download Badges</span>
+              </button>
+            </div>
           </motion.div>
 
           <motion.p
@@ -128,7 +146,8 @@ export default function LandingPage() {
   );
 }
 
-{/* 
+{
+  /* 
 // ORIGINAL CODE COMMENTED OUT
 "use client";
 
@@ -309,4 +328,5 @@ export default function LandingPage() {
     </div>
   );
 }
-*/}
+*/
+}
