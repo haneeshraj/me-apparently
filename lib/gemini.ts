@@ -72,27 +72,29 @@ For analytics, use quirky, unserious trait names like "overthinking energy", "ch
       }
     }
     
-    // Fallback to badge 1 if parsing fails
+    // Fallback to random badge if parsing fails
+    const randomBadgeId = Math.floor(Math.random() * 10) + 1
     return {
-      badgeId: 1,
+      badgeId: randomBadgeId,
       badgeType: 'core',
-      reasoning: 'Default assignment',
+      reasoning: 'Random assignment',
       analytics: [
-        { trait: 'vibes', percentage: 75 },
-        { trait: 'chaos energy', percentage: 50 },
-        { trait: 'overthinking', percentage: 60 }
+        { trait: 'vibes', percentage: Math.floor(Math.random() * 30) + 60 },
+        { trait: 'chaos energy', percentage: Math.floor(Math.random() * 30) + 40 },
+        { trait: 'overthinking', percentage: Math.floor(Math.random() * 30) + 50 }
       ],
     }
   } catch (error) {
     console.error('Gemini API error:', error)
+    const randomBadgeId = Math.floor(Math.random() * 10) + 1
     return {
-      badgeId: 1,
+      badgeId: randomBadgeId,
       badgeType: 'core',
-      reasoning: 'Error in analysis',
+      reasoning: 'Random assignment due to error',
       analytics: [
-        { trait: 'vibes', percentage: 75 },
-        { trait: 'chaos energy', percentage: 50 },
-        { trait: 'overthinking', percentage: 60 }
+        { trait: 'vibes', percentage: Math.floor(Math.random() * 30) + 60 },
+        { trait: 'chaos energy', percentage: Math.floor(Math.random() * 30) + 40 },
+        { trait: 'overthinking', percentage: Math.floor(Math.random() * 30) + 50 }
       ],
     }
   }
@@ -186,26 +188,28 @@ For analytics, use quirky, unserious trait names like "sad boi hours", "playlist
       }
     }
     
+    const randomBadgeId = Math.floor(Math.random() * 10) + 1
     return {
-      badgeId: 1,
+      badgeId: randomBadgeId,
       badgeType: 'music',
-      reasoning: 'Default assignment',
+      reasoning: 'Random assignment',
       analytics: [
-        { trait: 'sad boi hours', percentage: 70 },
-        { trait: 'playlist obsession', percentage: 85 },
-        { trait: 'genre hopping', percentage: 45 }
+        { trait: 'sad boi hours', percentage: Math.floor(Math.random() * 30) + 60 },
+        { trait: 'playlist obsession', percentage: Math.floor(Math.random() * 30) + 70 },
+        { trait: 'genre hopping', percentage: Math.floor(Math.random() * 40) + 30 }
       ],
     }
   } catch (error) {
     console.error('Gemini API error:', error)
+    const randomBadgeId = Math.floor(Math.random() * 10) + 1
     return {
-      badgeId: 1,
+      badgeId: randomBadgeId,
       badgeType: 'music',
-      reasoning: 'Error in analysis',
+      reasoning: 'Random assignment due to error',
       analytics: [
-        { trait: 'sad boi hours', percentage: 70 },
-        { trait: 'playlist obsession', percentage: 85 },
-        { trait: 'genre hopping', percentage: 45 }
+        { trait: 'sad boi hours', percentage: Math.floor(Math.random() * 30) + 60 },
+        { trait: 'playlist obsession', percentage: Math.floor(Math.random() * 30) + 70 },
+        { trait: 'genre hopping', percentage: Math.floor(Math.random() * 40) + 30 }
       ],
     }
   }
@@ -266,26 +270,28 @@ For analytics, use quirky, unserious trait names like "emotional damage", "commi
       }
     }
     
+    const randomBadgeId = Math.floor(Math.random() * 10) + 1
     return {
-      badgeId: 1,
+      badgeId: randomBadgeId,
       badgeType: 'dating',
-      reasoning: 'Default assignment',
+      reasoning: 'Random assignment',
       analytics: [
-        { trait: 'emotional damage', percentage: 65 },
-        { trait: 'hopeless romantic energy', percentage: 80 },
-        { trait: 'commitment issues', percentage: 40 }
+        { trait: 'emotional damage', percentage: Math.floor(Math.random() * 30) + 50 },
+        { trait: 'hopeless romantic energy', percentage: Math.floor(Math.random() * 30) + 65 },
+        { trait: 'commitment issues', percentage: Math.floor(Math.random() * 40) + 30 }
       ],
     }
   } catch (error) {
     console.error('Gemini API error:', error)
+    const randomBadgeId = Math.floor(Math.random() * 10) + 1
     return {
-      badgeId: 1,
+      badgeId: randomBadgeId,
       badgeType: 'dating',
-      reasoning: 'Error in analysis',
+      reasoning: 'Random assignment due to error',
       analytics: [
-        { trait: 'emotional damage', percentage: 65 },
-        { trait: 'hopeless romantic energy', percentage: 80 },
-        { trait: 'commitment issues', percentage: 40 }
+        { trait: 'emotional damage', percentage: Math.floor(Math.random() * 30) + 50 },
+        { trait: 'hopeless romantic energy', percentage: Math.floor(Math.random() * 30) + 65 },
+        { trait: 'commitment issues', percentage: Math.floor(Math.random() * 40) + 30 }
       ],
     }
   }
