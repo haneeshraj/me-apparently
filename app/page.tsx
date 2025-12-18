@@ -1,19 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
 
 export default function LandingPage() {
-  const router = useRouter();
-  const [hasResults, setHasResults] = useState(false);
-
-  useEffect(() => {
-    // Check if user has cached results
-    const cachedResults = localStorage.getItem("cachedResults");
-    queueMicrotask(() => setHasResults(!!cachedResults));
-  }, []);
-
   return (
     <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
       {/* Animated background elements */}
@@ -61,9 +50,150 @@ export default function LandingPage() {
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
+          className="max-w-4xl w-full text-center space-y-10"
+        >
+          {/* Emoji decoration */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3, duration: 0.6 }}
+            className="text-8xl mb-8"
+          >
+            🚧
+          </motion.div>
+
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{
+              delay: 0.2,
+              type: "spring",
+              stiffness: 150,
+              damping: 12,
+            }}
+          >
+            <h1
+              className="text-6xl md:text-7xl font-black mb-6 text-gradient-rainbow"
+              style={{ fontFamily: "var(--font-family-display)" }}
+            >
+              Site Disabled
+            </h1>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="space-y-6 max-w-2xl mx-auto"
+          >
+            <p className="text-2xl md:text-3xl font-bold text-slate-900">
+              Don't worry though...
+            </p>
+            <p className="text-xl md:text-2xl text-slate-700 font-medium leading-relaxed">
+              There's more random fun <span className="font-black text-purple-600">SHIT</span> coming out that you can try for free!
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+            className="pt-8"
+          >
+            <a
+              href="https://twitter.com/mistartworks"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-3 px-12 py-6 bg-gradient-cosmic text-white text-xl font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-shadow duration-300"
+            >
+              <span>Follow @mistartworks</span>
+              <span>→</span>
+            </a>
+            <p className="text-lg text-slate-600 font-medium mt-6">
+              Be the first one to experience it!
+            </p>
+          </motion.div>
+
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.9 }}
+            className="text-base text-slate-500 italic pt-8 px-4"
+          >
+            ✨ Stay tuned for more chaotic creativity
+          </motion.p>
+        </motion.div>
+      </div>
+    </div>
+  );
+}
+
+{/* 
+// ORIGINAL CODE COMMENTED OUT
+"use client";
+
+import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+
+export default function LandingPage() {
+  const router = useRouter();
+  const [hasResults, setHasResults] = useState(false);
+
+  useEffect(() => {
+    // Check if user has cached results
+    const cachedResults = localStorage.getItem("cachedResults");
+    queueMicrotask(() => setHasResults(!!cachedResults));
+  }, []);
+
+  return (
+    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <motion.div
+          animate={{
+            scale: [1, 1.2, 1],
+            rotate: [0, 90, 0],
+          }}
+          transition={{
+            duration: 20,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+          className="absolute top-0 -left-20 w-96 h-96 bg-purple-300 rounded-full opacity-20 blur-3xl"
+        />
+        <motion.div
+          animate={{
+            scale: [1.2, 1, 1.2],
+            rotate: [90, 0, 90],
+          }}
+          transition={{
+            duration: 15,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+          className="absolute bottom-0 -right-20 w-96 h-96 bg-pink-300 rounded-full opacity-20 blur-3xl"
+        />
+        <motion.div
+          animate={{
+            y: [0, -30, 0],
+            x: [0, 30, 0],
+          }}
+          transition={{
+            duration: 18,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+          className="absolute top-1/2 left-1/2 w-96 h-96 bg-indigo-300 rounded-full opacity-10 blur-3xl"
+        />
+      </div>
+
+      <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
           className="max-w-3xl w-full text-center space-y-10"
         >
-          {/* Badge icons decoration */}
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -179,3 +309,4 @@ export default function LandingPage() {
     </div>
   );
 }
+*/}
