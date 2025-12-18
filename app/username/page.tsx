@@ -23,7 +23,7 @@ export default function UsernamePage() {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+    <div className="min-h-screen relative overflow-hidden bg-linear-to-br from-indigo-50 via-purple-50 to-pink-50">
       {/* Animated background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div

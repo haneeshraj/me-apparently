@@ -1,12 +1,49 @@
 import { GoogleGenAI } from '@google/genai'
 
-// Note: This should only be used server-side. API key is passed via environment variable.
-function getGenAI() {
-  const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY
-  if (!apiKey) {
-    throw new Error('Gemini API key is not configured')
+// Get all available API keys
+function getApiKeys(): string[] {
+  const keys: string[] = []
+  
+  // Try numbered keys first (GEMINI_API_KEY_1, GEMINI_API_KEY_2, etc.)
+  for (let i = 1; i <= 4; i++) {
+    const key = process.env[`GEMINI_API_KEY_${i}`]
+    if (key) keys.push(key)
   }
-  return new GoogleGenAI({ apiKey })
+  
+  // Fallback to legacy keys if no numbered keys found
+  if (keys.length === 0) {
+    const legacyKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY
+    if (legacyKey) keys.push(legacyKey)
+  }
+  
+  return keys
+}
+
+// Try API call with multiple keys until one works
+async function tryWithMultipleKeys<T>(
+  apiCall: (ai: GoogleGenAI) => Promise<T>
+): Promise<T> {
+  const apiKeys = getApiKeys()
+  
+  if (apiKeys.length === 0) {
+    throw new Error('No Gemini API keys configured')
+  }
+  
+  let lastError: Error | null = null
+  
+  for (const apiKey of apiKeys) {
+    try {
+      const ai = new GoogleGenAI({ apiKey })
+      return await apiCall(ai)
+    } catch (error) {
+      lastError = error as Error
+      console.warn(`API key failed, trying next key...`, error)
+      continue
+    }
+  }
+  
+  // All keys failed
+  throw lastError || new Error('All API keys failed')
 }
 
 export interface BadgeAssignment {
@@ -17,8 +54,6 @@ export interface BadgeAssignment {
 }
 
 export async function assignCorePersonalityBadge(answers: string[]): Promise<BadgeAssignment> {
-  const ai = getGenAI()
-
   const prompt = `You are analyzing personality quiz answers to assign one of 10 Core Personality badges.
 
 Badge Options:
@@ -49,43 +84,47 @@ Respond ONLY with a JSON object in this exact format:
 For analytics, use quirky, unserious trait names like "overthinking energy", "chaos tolerance", "main character vibes", "emotional damage", etc. Make them fun and relatable.`
 
   try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash-lite',
-      contents: prompt,
-    })
-    
-    const text = response.text || '' || ''
-    
-    // Extract JSON from response
-    const jsonMatch = text.match(/\{[\s\S]*\}/)
-    if (jsonMatch) {
-      const parsed = JSON.parse(jsonMatch[0])
+    const result = await tryWithMultipleKeys(async (ai) => {
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash-lite',
+        contents: prompt,
+      })
+      
+      const text = response.text || '' || ''
+      
+      // Extract JSON from response
+      const jsonMatch = text.match(/\{[\s\S]*\}/)
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0])
+        return {
+          badgeId: parsed.badgeId,
+          badgeType: 'core' as const,
+          reasoning: parsed.reasoning,
+          analytics: parsed.analytics || [
+            { trait: 'vibes', percentage: 75 },
+            { trait: 'chaos energy', percentage: 50 },
+            { trait: 'overthinking', percentage: 60 }
+          ],
+        }
+      }
+      
+      // Fallback to random badge if parsing fails
+      const randomBadgeId = Math.floor(Math.random() * 10) + 1
       return {
-        badgeId: parsed.badgeId,
-        badgeType: 'core',
-        reasoning: parsed.reasoning,
-        analytics: parsed.analytics || [
-          { trait: 'vibes', percentage: 75 },
-          { trait: 'chaos energy', percentage: 50 },
-          { trait: 'overthinking', percentage: 60 }
+        badgeId: randomBadgeId,
+        badgeType: 'core' as const,
+        reasoning: 'Random assignment',
+        analytics: [
+          { trait: 'vibes', percentage: Math.floor(Math.random() * 30) + 60 },
+          { trait: 'chaos energy', percentage: Math.floor(Math.random() * 30) + 40 },
+          { trait: 'overthinking', percentage: Math.floor(Math.random() * 30) + 50 }
         ],
       }
-    }
+    })
     
-    // Fallback to random badge if parsing fails
-    const randomBadgeId = Math.floor(Math.random() * 10) + 1
-    return {
-      badgeId: randomBadgeId,
-      badgeType: 'core',
-      reasoning: 'Random assignment',
-      analytics: [
-        { trait: 'vibes', percentage: Math.floor(Math.random() * 30) + 60 },
-        { trait: 'chaos energy', percentage: Math.floor(Math.random() * 30) + 40 },
-        { trait: 'overthinking', percentage: Math.floor(Math.random() * 30) + 50 }
-      ],
-    }
+    return result
   } catch (error) {
-    console.error('Gemini API error:', error)
+    console.error('All Gemini API keys failed:', error)
     const randomBadgeId = Math.floor(Math.random() * 10) + 1
     return {
       badgeId: randomBadgeId,
@@ -104,8 +143,6 @@ export async function assignMusicPersonalityBadge(
   spotifyData: { tracks: Array<{ name: string; artist: string; genre?: string }> } | null,
   fallbackAnswers: string[] | null
 ): Promise<BadgeAssignment> {
-  const ai = getGenAI()
-
   const prompt = spotifyData
     ? `You are analyzing Spotify top 10 tracks to assign one of 10 Music Personality badges.
 
@@ -166,41 +203,45 @@ Respond ONLY with a JSON object:
 For analytics, use quirky, unserious trait names like "sad boi hours", "playlist obsession", "genre hopping", "repeat one syndrome", etc.`
 
   try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash-lite',
-      contents: prompt,
-    })
-    
-    const text = response.text || ''
-    
-    const jsonMatch = text.match(/\{[\s\S]*\}/)
-    if (jsonMatch) {
-      const parsed = JSON.parse(jsonMatch[0])
+    const result = await tryWithMultipleKeys(async (ai) => {
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash-lite',
+        contents: prompt,
+      })
+      
+      const text = response.text || ''
+      
+      const jsonMatch = text.match(/\{[\s\S]*\}/)
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0])
+        return {
+          badgeId: parsed.badgeId,
+          badgeType: 'music' as const,
+          reasoning: parsed.reasoning,
+          analytics: parsed.analytics || [
+            { trait: 'sad boi hours', percentage: 70 },
+            { trait: 'playlist obsession', percentage: 85 },
+            { trait: 'genre hopping', percentage: 45 }
+          ],
+        }
+      }
+      
+      const randomBadgeId = Math.floor(Math.random() * 10) + 1
       return {
-        badgeId: parsed.badgeId,
-        badgeType: 'music',
-        reasoning: parsed.reasoning,
-        analytics: parsed.analytics || [
-          { trait: 'sad boi hours', percentage: 70 },
-          { trait: 'playlist obsession', percentage: 85 },
-          { trait: 'genre hopping', percentage: 45 }
+        badgeId: randomBadgeId,
+        badgeType: 'music' as const,
+        reasoning: 'Random assignment',
+        analytics: [
+          { trait: 'sad boi hours', percentage: Math.floor(Math.random() * 30) + 60 },
+          { trait: 'playlist obsession', percentage: Math.floor(Math.random() * 30) + 70 },
+          { trait: 'genre hopping', percentage: Math.floor(Math.random() * 40) + 30 }
         ],
       }
-    }
+    })
     
-    const randomBadgeId = Math.floor(Math.random() * 10) + 1
-    return {
-      badgeId: randomBadgeId,
-      badgeType: 'music',
-      reasoning: 'Random assignment',
-      analytics: [
-        { trait: 'sad boi hours', percentage: Math.floor(Math.random() * 30) + 60 },
-        { trait: 'playlist obsession', percentage: Math.floor(Math.random() * 30) + 70 },
-        { trait: 'genre hopping', percentage: Math.floor(Math.random() * 40) + 30 }
-      ],
-    }
+    return result
   } catch (error) {
-    console.error('Gemini API error:', error)
+    console.error('All Gemini API keys failed:', error)
     const randomBadgeId = Math.floor(Math.random() * 10) + 1
     return {
       badgeId: randomBadgeId,
@@ -216,7 +257,6 @@ For analytics, use quirky, unserious trait names like "sad boi hours", "playlist
 }
 
 export async function assignDatingEnergyBadge(answers: string[]): Promise<BadgeAssignment> {
-  const ai = getGenAI()
 
   const prompt = `You are analyzing dating preference answers to assign one of 10 Dating Energy badges.
 
@@ -248,32 +288,33 @@ Respond ONLY with a JSON object:
 For analytics, use quirky, unserious trait names like "emotional damage", "commitment issues", "hopeless romantic energy", "red flag detector", etc.`
 
   try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash-lite',
-      contents: prompt,
-    })
-    
-    const text = response.text || ''
-    
-    const jsonMatch = text.match(/\{[\s\S]*\}/)
-    if (jsonMatch) {
-      const parsed = JSON.parse(jsonMatch[0])
-      return {
-        badgeId: parsed.badgeId,
-        badgeType: 'dating',
-        reasoning: parsed.reasoning,
-        analytics: parsed.analytics || [
-          { trait: 'emotional damage', percentage: 65 },
-          { trait: 'hopeless romantic energy', percentage: 80 },
-          { trait: 'commitment issues', percentage: 40 }
-        ],
+    const result = await tryWithMultipleKeys(async (ai) => {
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash-lite',
+        contents: prompt,
+      })
+      
+      const text = response.text || ''
+      
+      const jsonMatch = text.match(/\{[\s\S]*\}/)
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0])
+        return {
+          badgeId: parsed.badgeId,
+          badgeType: 'dating' as const,
+          reasoning: parsed.reasoning,
+          analytics: parsed.analytics || [
+            { trait: 'emotional damage', percentage: 65 },
+            { trait: 'hopeless romantic energy', percentage: 80 },
+            { trait: 'commitment issues', percentage: 40 }
+          ],
+        }
       }
-    }
-    
-    const randomBadgeId = Math.floor(Math.random() * 10) + 1
-    return {
-      badgeId: randomBadgeId,
-      badgeType: 'dating',
+      
+      const randomBadgeId = Math.floor(Math.random() * 10) + 1
+      return {
+        badgeId: randomBadgeId,
+        badgeType: 'dating' as const,
       reasoning: 'Random assignment',
       analytics: [
         { trait: 'emotional damage', percentage: Math.floor(Math.random() * 30) + 50 },
@@ -281,8 +322,11 @@ For analytics, use quirky, unserious trait names like "emotional damage", "commi
         { trait: 'commitment issues', percentage: Math.floor(Math.random() * 40) + 30 }
       ],
     }
+    })
+    
+    return result
   } catch (error) {
-    console.error('Gemini API error:', error)
+    console.error('All Gemini API keys failed:', error)
     const randomBadgeId = Math.floor(Math.random() * 10) + 1
     return {
       badgeId: randomBadgeId,
@@ -308,8 +352,6 @@ export async function generatePersonalitySummary(
   badge2: { name: string; description: string },
   badge3: { name: string; description: string }
 ): Promise<PersonalitySummary> {
-  const ai = getGenAI()
-
   const prompt = `Generate a clear, readable personality summary based on these three badges. Write in plain, conversational language - NOT poetic or flowery.
 
 Badge 1: ${badge1.name} - ${badge1.description}
@@ -329,7 +371,8 @@ Respond ONLY with a JSON object:
 }`
 
   try {
-    const response = await ai.models.generateContent({
+    const result = await tryWithMultipleKeys(async (ai) => {
+      const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash-lite',
       contents: prompt,
     })
@@ -358,8 +401,11 @@ Respond ONLY with a JSON object:
       traits: ['Thoughtful', 'Authentic', 'Balanced'],
       warning: 'May cause excessive self-reflection.',
     }
+    })
+    
+    return result
   } catch (error) {
-    console.error('Gemini API error:', error)
+    console.error('All Gemini API keys failed:', error)
     return {
       summary: [
         `You're a ${badge1.name.toLowerCase()} who approaches music like a ${badge2.name.toLowerCase()}.`,
